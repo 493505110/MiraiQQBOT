@@ -6,9 +6,11 @@ import net.mamoe.mirai.console.data.value
 object Config : AutoSavePluginConfig("setting") {
     val ConfigList = arrayOf(
         "ITPK_APIKEY",
-        "ITPK_APISECRET"
+        "ITPK_APISECRET",
+        "MAX_COUNT"
     )
 
     var ITPK_APIKEY: String by value()
     var ITPK_APISECRET: String by value()
+    var MAX_COUNT: Int by value(10)
 }
