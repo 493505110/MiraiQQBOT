@@ -1,11 +1,17 @@
 package ml.zhou2008
 
+import io.github.mzdluo123.silk4j.AudioUtils
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.register
 import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregister
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.CompositeCommand
+import net.mamoe.mirai.console.command.MemberCommandSender
 import net.mamoe.mirai.console.command.SimpleCommand
 import net.mamoe.mirai.message.code.MiraiCode.deserializeMiraiCode
+import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
+import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsVoice
+import java.net.URL
+import java.net.URLEncoder
 
 class Commands {
     companion object {
@@ -13,12 +19,14 @@ class Commands {
             CommandTest.register()
             CommandConfig.register()
             CommandSay.register()
+            CommandTTS.register()
         }
 
         fun unregister() {
             CommandTest.unregister()
             CommandConfig.unregister()
             CommandSay.unregister()
+            CommandTTS.unregister()
         }
     }
 }
@@ -86,5 +94,21 @@ object CommandSay : SimpleCommand(
         } else {
             sendMessage("次数达到上限($maxCount)")
         }
+    }
+}
+
+object CommandTTS : SimpleCommand(
+    MiraiQQBOT, "tts",
+    description = "!!!-BUG-!!!文本转语音(只能在群执行)"
+) {
+    @Suppress("BlockingMethodInNonBlockingContext")
+    @Handler
+    suspend fun MemberCommandSender.handle(text: String) {
+        val ttsURL = "https://fanyi.baidu.com/gettts?lan=zh&spd=5&text=${URLEncoder.encode(text, Charsets.UTF_8)}"
+        val stream = URL(ttsURL).openStream()
+        val silk = AudioUtils.mp3ToSilk(stream)
+        val er = silk.toExternalResource()
+        subject.sendMessage(er.uploadAsVoice(subject))
+        er.close()
     }
 }
