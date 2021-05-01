@@ -4,7 +4,6 @@ import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.event.GlobalEventChannel.subscribeAlways
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
-import net.mamoe.mirai.event.events.FriendMessageEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.message.data.content
@@ -28,21 +27,19 @@ object MiraiQQBOT : KotlinPlugin(
     }
 
     override fun onEnable() {
-        Config.reload()
         Commands.register()
+        Config.reload()
 
-        if (Config.ITPK_APIKEY == "" || Config.ITPK_APISECRET == "") {
+        if (Config.ITPK_APIKEY.isEmpty() || Config.ITPK_APISECRET.isEmpty()) {
             logger.warning { "ITPK_APIKEY or ITPK_APISECRET no set" }
         }
 
         subscribeAlways<GroupMessageEvent> {
             val msg = message.content
             if (msg.startsWith("-")) {
-                subject.sendMessage(botITPKgetREP(msg.drop(1)))
+                subject.sendMessage(botITPKgetREP(msg.removePrefix("-")))
             }
         }
-
-        subscribeAlways<FriendMessageEvent> { subject.sendMessage(message) }
 
         subscribeAlways<NewFriendRequestEvent> { accept() }
         subscribeAlways<BotInvitedJoinGroupRequestEvent> { accept() }
