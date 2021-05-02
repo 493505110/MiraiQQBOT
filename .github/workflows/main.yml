@@ -14,8 +14,8 @@ jobs:
         with:
           java-version: 15
       - name: Build with Gradle
-        run: chmod +x ./gradlew && ./gradlew clean build
-      - name: Archive MiraiQQBOT artifacts
+        run: chmod +x ./gradlew && ./gradlew clean buildPlugin
+      - name: Upload MiraiQQBOT artifacts
         uses: actions/upload-artifact@v2
         with:
           name: MiraiQQBOT
