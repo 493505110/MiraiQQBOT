@@ -1,9 +1,13 @@
 package ml.zhou2008
 
+import com.alibaba.fastjson.JSON
+import com.alibaba.fastjson.JSONObject
 import net.mamoe.mirai.console.plugin.jvm.JvmPluginDescription
 import net.mamoe.mirai.console.plugin.jvm.KotlinPlugin
 import net.mamoe.mirai.event.GlobalEventChannel.subscribeAlways
-import net.mamoe.mirai.event.events.*
+import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
+import net.mamoe.mirai.event.events.GroupMessageEvent
+import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.message.data.content
 import net.mamoe.mirai.utils.info
 import net.mamoe.mirai.utils.warning
@@ -19,23 +23,25 @@ object MiraiQQBOT : KotlinPlugin(
         author("zhou2008")
     }
 ) {
-    private fun botITPKgetREP(question: String): String {
-        val url = "http://i.itpk.cn/api.php?question=${URLEncoder.encode(question, Charsets.UTF_8)}&api_key=${Config.ITPK_APIKEY}&api_secret=${Config.ITPK_APISECRET}"
-        return URL(url).readText().drop(1)
+    private fun botGetREP(spoken: String): String {
+        val url = "https://api.ownthink.com/bot?appid=${Config.APPID}&userid=${Config.USERID}&spoken=${URLEncoder.encode(spoken, Charsets.UTF_8)}"
+        val jsonStr = URL(url).readText()
+        val jsonObj = JSONObject.parseObject(jsonStr)
+        return jsonObj.getJSONObject("data").getJSONObject("info").getString("text")
     }
 
     override fun onEnable() {
         Commands.register()
         Config.reload()
 
-        if (Config.ITPK_APIKEY.isEmpty() || Config.ITPK_APISECRET.isEmpty()) {
-            logger.warning { "ITPK_APIKEY or ITPK_APISECRET no set" }
+        if (Config.APPID.isEmpty() || Config.USERID.isEmpty()) {
+            logger.warning { "APPID or USERID no set" }
         }
 
         subscribeAlways<GroupMessageEvent> {
             val msg = message.content
             if (msg.startsWith("-")) {
-                subject.sendMessage(botITPKgetREP(msg.removePrefix("-")))
+                subject.sendMessage(botGetREP(msg.removePrefix("-")))
             }
         }
 

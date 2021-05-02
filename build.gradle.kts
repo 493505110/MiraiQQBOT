@@ -15,5 +15,6 @@ repositories {
 }
 
 dependencies {
-    implementation(files("libs/silk4j-1.2-dev.jar"))
+    //implementation(files("libs/silk4j-1.2-dev.jar"))
+    implementation("com.alibaba:fastjson:1.2.55")
 }

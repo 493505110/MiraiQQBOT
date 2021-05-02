@@ -4,13 +4,7 @@ import net.mamoe.mirai.console.data.AutoSavePluginConfig
 import net.mamoe.mirai.console.data.value
 
 object Config : AutoSavePluginConfig("setting") {
-    val ConfigList = arrayOf(
-        "ITPK_APIKEY",
-        "ITPK_APISECRET",
-        "MAX_COUNT"
-    )
-
-    var ITPK_APIKEY: String by value()
-    var ITPK_APISECRET: String by value()
+    var APPID: String by value()
+    var USERID: String by value("miraiqqbot")
     var MAX_COUNT: Int by value(10)
 }
