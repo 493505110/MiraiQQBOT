@@ -6,10 +6,6 @@ import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.MemberCommandSender
 import net.mamoe.mirai.console.command.SimpleCommand
 import net.mamoe.mirai.message.code.MiraiCode.deserializeMiraiCode
-import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
-import net.mamoe.mirai.utils.ExternalResource.Companion.uploadAsVoice
-import java.net.URL
-import java.net.URLEncoder
 
 class Commands {
     companion object {
@@ -56,16 +52,10 @@ object CommandSay : SimpleCommand(
 
 object CommandTTS : SimpleCommand(
     MiraiQQBOT, "tts",
-    description = "(TEST)文本转语音(只能在群执行)"
+    description = "文本转语音(只能在群执行)"
 ) {
-    @Suppress("BlockingMethodInNonBlockingContext")
     @Handler
     suspend fun MemberCommandSender.handle(text: String) {
-        val ttsURL = "https://fanyi.baidu.com/gettts?lan=zh&spd=5&text=${URLEncoder.encode(text, Charsets.UTF_8)}"
-        val stream = URL(ttsURL).openStream()
-        //val silk = AudioUtils.mp3ToSilk(stream)
-        val er = stream.toExternalResource()
-        subject.sendMessage(er.uploadAsVoice(subject))
-        er.close()
+        Utils.tts(text, group)
     }
 }
