@@ -5,6 +5,8 @@ import net.mamoe.mirai.console.command.CommandManager.INSTANCE.unregister
 import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.MemberCommandSender
 import net.mamoe.mirai.console.command.SimpleCommand
+import net.mamoe.mirai.event.GlobalEventChannel.subscribeOnce
+import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.code.MiraiCode.deserializeMiraiCode
 
 class Commands {
@@ -13,12 +15,14 @@ class Commands {
             CommandTest.register()
             CommandSay.register()
             CommandTTS.register()
+            CommandGNMSMC.register()
         }
 
         fun unregister() {
             CommandTest.unregister()
             CommandSay.unregister()
             CommandTTS.unregister()
+            CommandGNMSMC.unregister()
         }
     }
 }
@@ -57,5 +61,17 @@ object CommandTTS : SimpleCommand(
     @Handler
     suspend fun MemberCommandSender.handle(text: String) {
         Utils.tts(text, group)
+    }
+}
+
+object CommandGNMSMC : SimpleCommand(
+    MiraiQQBOT, "gnmsmc",
+    description = "获取下一条消息的Mirai码"
+) {
+    @Handler
+    suspend fun CommandSender.handle() {
+        subscribeOnce<MessageEvent> {
+            sendMessage(message.serializeToMiraiCode())
+        }
     }
 }

@@ -35,8 +35,16 @@ object MiraiQQBOT : KotlinPlugin(
             }
         }
 
-        subscribeAlways<NewFriendRequestEvent> { accept() }
-        subscribeAlways<BotInvitedJoinGroupRequestEvent> { accept() }
+        subscribeAlways<NewFriendRequestEvent> {
+            if (Config.AUTO_ACCEPT) {
+                accept()
+            }
+        }
+        subscribeAlways<BotInvitedJoinGroupRequestEvent> {
+            if (Config.AUTO_ACCEPT) {
+                accept()
+            }
+        }
 
         logger.info { "Plugin loaded" }
     }
