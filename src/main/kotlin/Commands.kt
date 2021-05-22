@@ -10,10 +10,7 @@ import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.event.GlobalEventChannel.subscribeOnce
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.code.MiraiCode.deserializeMiraiCode
-import net.mamoe.mirai.message.data.At
-import net.mamoe.mirai.message.data.MessageChainBuilder
-import net.mamoe.mirai.message.data.PlainText
-import net.mamoe.mirai.message.data.buildMessageChain
+import net.mamoe.mirai.message.data.*
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
 
@@ -44,8 +41,14 @@ object CommandTest : SimpleCommand(
     description = "测试"
 ) {
     @Handler
-    suspend fun CommandSender.handle() {
-        sendMessage("Hello world!")
+    suspend fun MemberCommandSender.handle(qq: Long, name: String, text: String, time: Int) {
+        val builder = ForwardMessageBuilder(group)
+        if (time==-1) {
+            builder.add(qq, name, PlainText(text))
+        } else {
+            builder.add(qq, name, PlainText(text), time)
+        }
+        sendMessage(builder.build())
     }
 }
 
@@ -87,11 +90,11 @@ object CommandAtall : SimpleCommand(
 ) {
     @Handler
     suspend fun MemberCommandSender.handle() {
-        val messageChainBuilder = MessageChainBuilder()
+        val builder = MessageChainBuilder()
         for (member in group.members) {
-            messageChainBuilder.add(At(member))
+            builder.add(At(member))
         }
-        sendMessage(messageChainBuilder.build())
+        sendMessage(builder.build())
     }
 }
 
