@@ -100,13 +100,13 @@ object CommandQuery : SimpleCommand(
     description = "查询某人在此群的信息"
 ) {
     @Handler
-    suspend fun MemberCommandSender.handle(user: NormalMember) {
+    suspend fun MemberCommandSender.handle(target: NormalMember) {
         val format = SimpleDateFormat("yyyy/MM/dd E HH:mm:ss z")
-        val lastSpeakTime = format.format(Timestamp(user.lastSpeakTimestamp.toLong()*1000))
-        val joinTime = format.format(Timestamp(user.joinTimestamp.toLong()*1000))
+        val lastSpeakTime = format.format(Timestamp(target.lastSpeakTimestamp.toLong()*1000))
+        val joinTime = format.format(Timestamp(target.joinTimestamp.toLong()*1000))
         sendMessage(buildMessageChain {
-            +PlainText("QQ: ${user.id}(${user.nick})\n")
-            +PlainText("群卡片名称: ${user.nameCard}\n")
+            +PlainText("QQ: ${target.id}(${target.nick})\n")
+            +PlainText("群卡片名称: ${target.nameCard}\n")
             +PlainText("最后一次发言时间: $lastSpeakTime\n")
             +PlainText("入群时间: $joinTime")
         })
