@@ -6,11 +6,16 @@ import net.mamoe.mirai.console.command.CommandSender
 import net.mamoe.mirai.console.command.MemberCommandSender
 import net.mamoe.mirai.console.command.SimpleCommand
 import net.mamoe.mirai.console.command.UserCommandSender
+import net.mamoe.mirai.contact.NormalMember
 import net.mamoe.mirai.event.GlobalEventChannel.subscribeOnce
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.code.MiraiCode.deserializeMiraiCode
 import net.mamoe.mirai.message.data.At
 import net.mamoe.mirai.message.data.MessageChainBuilder
+import net.mamoe.mirai.message.data.PlainText
+import net.mamoe.mirai.message.data.buildMessageChain
+import java.sql.Timestamp
+import java.text.SimpleDateFormat
 
 class Commands {
     companion object {
@@ -20,7 +25,7 @@ class Commands {
             CommandTTS.register()
             CommandGNMSMC.register()
             CommandAtall.register()
-            //CommandQuery.register()
+            CommandQuery.register()
         }
 
         fun unregister() {
@@ -29,7 +34,7 @@ class Commands {
             CommandTTS.unregister()
             CommandGNMSMC.unregister()
             CommandAtall.unregister()
-            //CommandQuery.unregister()
+            CommandQuery.unregister()
         }
     }
 }
@@ -90,20 +95,20 @@ object CommandAtall : SimpleCommand(
     }
 }
 
-//object CommandQuery : SimpleCommand(
-//    MiraiQQBOT, "query",
-//    description = "查询某人在此群的信息"
-//) {
-//    @Handler
-//    suspend fun MemberCommandSender.handle(user: NormalMember) {
-//        val format = SimpleDateFormat("yyyy/MM/dd E HH:mm:ss z")
-//        val lastSpeakTime = format.format(user.lastSpeakTimestamp)
-//        val joinTime = format.format(user.joinTimestamp)
-//        sendMessage(buildMessageChain {
-//            +PlainText("QQ: ${user.id}(${user.nick})\n")
-//            +PlainText("群卡片名称: ${user.nameCard}\n")
-//            +PlainText("最后一次发言时间: $lastSpeakTime\n")
-//            +PlainText("入群时间: $joinTime")
-//        })
-//    }
-//}
+object CommandQuery : SimpleCommand(
+    MiraiQQBOT, "query",
+    description = "查询某人在此群的信息"
+) {
+    @Handler
+    suspend fun MemberCommandSender.handle(user: NormalMember) {
+        val format = SimpleDateFormat("yyyy/MM/dd E HH:mm:ss z")
+        val lastSpeakTime = format.format(Timestamp(user.lastSpeakTimestamp.toLong()*1000))
+        val joinTime = format.format(Timestamp(user.joinTimestamp.toLong()*1000))
+        sendMessage(buildMessageChain {
+            +PlainText("QQ: ${user.id}(${user.nick})\n")
+            +PlainText("群卡片名称: ${user.nameCard}\n")
+            +PlainText("最后一次发言时间: $lastSpeakTime\n")
+            +PlainText("入群时间: $joinTime")
+        })
+    }
+}
