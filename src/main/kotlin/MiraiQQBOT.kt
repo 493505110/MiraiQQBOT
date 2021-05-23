@@ -7,9 +7,6 @@ import net.mamoe.mirai.event.GlobalEventChannel.subscribeAlways
 import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
-import net.mamoe.mirai.message.data.At
-import net.mamoe.mirai.message.data.PlainText
-import net.mamoe.mirai.message.data.buildMessageChain
 import net.mamoe.mirai.message.data.content
 import net.mamoe.mirai.utils.info
 import net.mamoe.mirai.utils.warning
@@ -49,51 +46,6 @@ object MiraiQQBOT : KotlinPlugin(
             val msg = message.content
             if (msg.startsWith("-")) {
                 subject.sendMessage(botGetREP(msg.removePrefix("-")))
-            } else if (msg == "签到" || msg == "qd") {
-                if (Data.qdED.contains(sender.id)) {
-                    subject.sendMessage(At(sender) + "\n你已经签到过了")
-                } else {
-                    Data.qdCount += 1
-                    val nowCoin = Data.coin[sender.id]
-                    val gotCoin: Int
-                    if (Data.qdCount == 1) {
-                        val coin = (30..40).random()
-                        if (nowCoin != null) {
-                            Data.coin[sender.id] = nowCoin + coin
-                        } else {
-                            Data.coin[sender.id] = coin
-                        }
-                        gotCoin = coin
-                    } else {
-                        val coin = (10..20).random()
-                        if (nowCoin != null) {
-                            Data.coin[sender.id] = nowCoin + coin
-                        } else {
-                            Data.coin[sender.id] = coin
-                        }
-                        gotCoin = coin
-                    }
-                    if (Data.qdED.isEmpty()) {
-                        Data.qdED=LongArray(1)
-                        Data.qdED[0] = sender.id
-                    } else {
-                        val newARRAY = LongArray(Data.qdED.size + 1)
-                        for (i in Data.qdED.indices) {
-                            newARRAY[i] = Data.qdED[i]
-                        }
-                        newARRAY[Data.qdED.size] = sender.id
-                        Data.qdED = newARRAY
-                    }
-
-                    subject.sendMessage(buildMessageChain {
-                        +At(sender)
-                        +PlainText("\n")
-                        +PlainText("签到成功\n")
-                        +PlainText("你是今天第${Data.qdCount}位签到的\n")
-                        +PlainText("你获得了 $gotCoin Coin\n")
-                        +PlainText("你现在有 ${Data.coin[sender.id]} Coin")
-                    })
-                }
             }
         }
 
