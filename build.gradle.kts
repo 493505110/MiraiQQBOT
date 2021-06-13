@@ -1,5 +1,5 @@
 plugins {
-    val kotlinVersion = "1.4.30"
+    val kotlinVersion = "1.5.10"
     kotlin("jvm") version kotlinVersion
     kotlin("plugin.serialization") version kotlinVersion
 
@@ -16,4 +16,5 @@ repositories {
 
 dependencies {
     implementation("com.alibaba:fastjson:1.2.55")
+    implementation("org.jetbrains.kotlin:kotlin-reflect:1.5.10")
 }

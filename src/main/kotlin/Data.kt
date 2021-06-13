@@ -7,4 +7,5 @@ object Data : AutoSavePluginData("data") {
     var coin: MutableMap<Long, Int> by value()
     var qdCount: Int by value(0)
     var qdED: LongArray by value(LongArray(0))
+    var allQD: MutableMap<Long, Int> by value()
 }

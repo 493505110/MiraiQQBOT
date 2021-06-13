@@ -13,6 +13,7 @@ import net.mamoe.mirai.message.code.MiraiCode.deserializeMiraiCode
 import net.mamoe.mirai.message.data.*
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
+import kotlin.math.roundToInt
 
 class Commands {
     companion object {
@@ -25,6 +26,7 @@ class Commands {
             CommandQuery.register()
             CommandCointop.register()
             CommandQD.register()
+            CommandGetCoin.register()
         }
 
         fun unregister() {
@@ -36,6 +38,7 @@ class Commands {
             CommandQuery.unregister()
             CommandCointop.unregister()
             CommandQD.unregister()
+            CommandGetCoin.unregister()
         }
     }
 }
@@ -137,7 +140,7 @@ object CommandCointop : SimpleCommand(
         val builder = MessageChainBuilder()
         val it = sortedmap.iterator()
         builder.add(PlainText("Coin 排行榜\n"))
-        var allcoin = 0
+        var allCoin = 0
         var index = 1
         while (it.hasNext()) {
             val key = it.next().key
@@ -145,10 +148,10 @@ object CommandCointop : SimpleCommand(
             builder.add(PlainText("$index.") + At(key) + PlainText("($key): $value\n"))
             index++
             if (value != null) {
-                allcoin += value
+                allCoin += value
             }
         }
-        builder.add(PlainText("Coin 总和: $allcoin"))
+        builder.add(PlainText("Coin 总和: $allCoin"))
         sendMessage(builder.build())
     }
 }
@@ -182,6 +185,7 @@ object CommandQD : SimpleCommand(
                 }
                 gotCoin = coin
             }
+
             if (Data.qdED.isEmpty()) {
                 Data.qdED = LongArray(1)
                 Data.qdED[0] = user.id
@@ -194,14 +198,58 @@ object CommandQD : SimpleCommand(
                 Data.qdED = newARRAY
             }
 
+            val userAllQD = Data.allQD[user.id]
+            if (userAllQD != null) {
+                Data.allQD[user.id] = userAllQD + 1
+            } else {
+                Data.allQD[user.id] = 1
+            }
+
             subject.sendMessage(buildMessageChain {
                 +At(user)
                 +PlainText("\n")
                 +PlainText("签到成功\n")
                 +PlainText("你是今天第${Data.qdCount}位签到的\n")
+                +PlainText("你已累计签到${Data.allQD[user.id]}天\n")
                 +PlainText("你获得了 $gotCoin Coin\n")
                 +PlainText("你现在有 ${Data.coin[user.id]} Coin")
             })
+        }
+    }
+}
+
+object CommandGetCoin : SimpleCommand(
+    MiraiQQBOT, "getcoin", "抢劫",
+    description = "抢劫 40%成功 成功则获得对方的40% 失败扣除自己的20%"
+) {
+    @Handler
+    suspend fun MemberCommandSender.handle(target: NormalMember) {
+        if (target != user) {
+            val tof = (1..10).random() <= 4
+            val targetCoin = Data.coin[target.id]
+            val selfCoin = Data.coin[target.id]
+            val lostCoin: Int
+            if (selfCoin != null) {
+                lostCoin = (selfCoin * 0.2).roundToInt()
+            } else {
+                sendMessage("你至少需要1 Coin来进行这个操作")
+                return
+            }
+            if (targetCoin != null) {
+                val getCoin = (targetCoin * 0.4).roundToInt()
+                if (tof) {
+                    Data.coin[user.id] = selfCoin + getCoin
+                    Data.coin[target.id] = targetCoin - getCoin
+                    sendMessage(At(user.id) + "成功,你获得了$getCoin(${Data.coin[user.id]}) Coin,目标还剩${Data.coin[target.id]} Coin")
+                } else {
+                    Data.coin[user.id] = selfCoin - lostCoin
+                    sendMessage(At(user.id) + "失败,你丢失了$lostCoin Coin,你还剩${Data.coin[user.id]} Coin")
+                }
+            } else {
+                sendMessage("你的目标没有任何的Coin")
+            }
+        } else {
+            sendMessage("您搁着卡bug呢?")
         }
     }
 }
