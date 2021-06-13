@@ -27,6 +27,7 @@ class Commands {
             CommandCointop.register()
             CommandQD.register()
             CommandGetCoin.register()
+            CommandMusic.register()
         }
 
         fun unregister() {
@@ -39,6 +40,7 @@ class Commands {
             CommandCointop.unregister()
             CommandQD.unregister()
             CommandGetCoin.unregister()
+            CommandMusic.unregister()
         }
     }
 }
@@ -240,10 +242,12 @@ object CommandGetCoin : SimpleCommand(
                 if (tof) {
                     Data.coin[user.id] = selfCoin + getCoin
                     Data.coin[target.id] = targetCoin - getCoin
-                    sendMessage(At(user.id) + "成功,你获得了$getCoin(${Data.coin[user.id]}) Coin,目标还剩${Data.coin[target.id]} Coin")
+                    sendMessage(
+                        At(user) + "成功,你获得了$getCoin(${Data.coin[user.id]}) Coin,目标还剩${Data.coin[target.id]} Coin"
+                    )
                 } else {
                     Data.coin[user.id] = selfCoin - lostCoin
-                    sendMessage(At(user.id) + "失败,你丢失了$lostCoin Coin,你还剩${Data.coin[user.id]} Coin")
+                    sendMessage(At(user) + "失败,你丢失了$lostCoin Coin,你还剩${Data.coin[user.id]} Coin")
                 }
             } else {
                 sendMessage("你的目标没有任何的Coin")
@@ -251,5 +255,15 @@ object CommandGetCoin : SimpleCommand(
         } else {
             sendMessage("您搁着卡bug呢?")
         }
+    }
+}
+
+object CommandMusic : SimpleCommand(
+    MiraiQQBOT, "music", "点歌",
+    description = "点歌"
+) {
+    @Handler
+    suspend fun UserCommandSender.handle(name: String) {
+        Utils.music(name, subject)
     }
 }
