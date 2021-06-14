@@ -1,7 +1,6 @@
 package ml.zhou2008
 
 import com.alibaba.fastjson.JSONObject
-import net.mamoe.mirai.contact.Contact
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.data.MusicKind
 import net.mamoe.mirai.message.data.MusicShare
@@ -79,7 +78,7 @@ class Utils {
         }
 
         @Suppress("BlockingMethodInNonBlockingContext")
-        suspend fun music(name: String, contact: Contact) {
+        suspend fun music(name: String, group: Group) {
             fun getRealURL(mid: String): String {
                 val url = URL(
                     "https://u.y.qq.com/cgi-bin/musicu.fcg?format=json&data=%7B%22req_0%22%3A%7B%22module%22%3A%22vkey.GetVkeyServer%22%2C%22method%22%3A%22CgiGetVkey%22%2C%22param%22%3A%7B%22guid%22%3A%22358840384%22%2C%22songmid%22%3A%5B%22$mid\"%5D%2C\"songtype\"%3A%5B0%5D%2C\"uin\"%3A\"1443481947\"%2C\"loginflag\"%3A1%2C\"platform\"%3A\"20\"%7D%7D%2C\"comm\"%3A%7B\"uin\"%3A\"18585073516\"%2C\"format\"%3A\"json\"%2C\"ct\"%3A24%2C\"cv\"%3A0%7D%7D"
@@ -119,16 +118,21 @@ class Utils {
             } catch (e: Exception) {
                 song.getString("albumname")
             }
-            contact.sendMessage(
-                MusicShare(
-                    kind = MusicKind.QQMusic,
-                    title = musicName,
-                    summary = desc,
-                    jumpUrl = jumpURL,
-                    pictureUrl = picURL,
-                    musicUrl = musicURL
+            if (musicURL.endsWith("/")) {
+                group.sendMessage("暂不支持")
+            } else {
+                group.sendMessage(
+                    MusicShare(
+                        kind = MusicKind.QQMusic,
+                        title = musicName,
+                        summary = desc,
+                        jumpUrl = jumpURL,
+                        pictureUrl = picURL,
+                        musicUrl = musicURL,
+                        brief = "[一位沙雕群友点的歌]$musicName"
+                    )
                 )
-            )
+            }
         }
     }
 }

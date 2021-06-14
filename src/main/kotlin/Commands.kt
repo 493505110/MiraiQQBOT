@@ -263,7 +263,7 @@ object CommandMusic : SimpleCommand(
     description = "点歌"
 ) {
     @Handler
-    suspend fun UserCommandSender.handle(name: String) {
-        Utils.music(name, subject)
+    suspend fun MemberCommandSender.handle(name: String) {
+        Utils.music(name, group)
     }
 }
