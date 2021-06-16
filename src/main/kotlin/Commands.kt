@@ -280,12 +280,7 @@ object CommandGetAvatar : SimpleCommand(
     @Handler
     suspend fun UserCommandSender.handle(target: Long) {
         val er = URL("http://q1.qlogo.cn/g?b=qq&nk=$target&s=640").openStream().toExternalResource()
-        val image = subject.uploadImage(er)
+        subject.sendMessage(subject.uploadImage(er))
         er.close()
-        if (!image.isContentEmpty()) {
-            subject.sendMessage(image)
-        } else {
-            subject.sendMessage("未找到")
-        }
     }
 }
