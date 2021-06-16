@@ -11,6 +11,8 @@ import net.mamoe.mirai.event.GlobalEventChannel.subscribeOnce
 import net.mamoe.mirai.event.events.MessageEvent
 import net.mamoe.mirai.message.code.MiraiCode.deserializeMiraiCode
 import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
+import java.net.URL
 import java.sql.Timestamp
 import java.text.SimpleDateFormat
 import kotlin.math.roundToInt
@@ -28,6 +30,7 @@ class Commands {
             CommandQD.register()
             CommandGetCoin.register()
             CommandMusic.register()
+            CommandGetAvatar.register()
         }
 
         fun unregister() {
@@ -41,6 +44,7 @@ class Commands {
             CommandQD.unregister()
             CommandGetCoin.unregister()
             CommandMusic.unregister()
+            CommandGetAvatar.unregister()
         }
     }
 }
@@ -63,7 +67,7 @@ object CommandTest : SimpleCommand(
 
 object CommandSay : SimpleCommand(
     MiraiQQBOT, "say", "发送",
-    description = "发送消息(发送)"
+    description = "发送消息"
 ) {
     @Handler
     suspend fun CommandSender.handle(text: String) {
@@ -83,7 +87,7 @@ object CommandTTS : SimpleCommand(
 
 object CommandGNMSMC : SimpleCommand(
     MiraiQQBOT, "gnmsmc", "下一条消息码",
-    description = "获取下一条消息的Mirai码(下一条消息码)"
+    description = "获取下一条消息的Mirai码"
 ) {
     @Handler
     suspend fun UserCommandSender.handle() {
@@ -109,7 +113,7 @@ object CommandAtall : SimpleCommand(
 
 object CommandQuery : SimpleCommand(
     MiraiQQBOT, "query", "查询",
-    description = "查询某人在此群的信息(查询)"
+    description = "查询某人在此群的信息"
 ) {
     @Handler
     suspend fun MemberCommandSender.handle(target: NormalMember) {
@@ -132,7 +136,7 @@ object CommandQuery : SimpleCommand(
 
 object CommandCointop : SimpleCommand(
     MiraiQQBOT, "cointop", "金币排行",
-    description = "Coin 排行榜(金币排行)"
+    description = "Coin 排行榜"
 ) {
     @Handler
     suspend fun CommandSender.handler() {
@@ -265,5 +269,23 @@ object CommandMusic : SimpleCommand(
     @Handler
     suspend fun MemberCommandSender.handle(name: String) {
         Utils.music(name, group)
+    }
+}
+
+object CommandGetAvatar : SimpleCommand(
+    MiraiQQBOT, "getavatar", "获取头像",
+    description = "获取target的头像"
+) {
+    @Suppress("BlockingMethodInNonBlockingContext")
+    @Handler
+    suspend fun UserCommandSender.handle(target: Long) {
+        val er = URL("http://q1.qlogo.cn/g?b=qq&nk=$target&s=640").openStream().toExternalResource()
+        val image = subject.uploadImage(er)
+        er.close()
+        if (!image.isContentEmpty()) {
+            subject.sendMessage(image)
+        } else {
+            subject.sendMessage("未找到")
+        }
     }
 }
