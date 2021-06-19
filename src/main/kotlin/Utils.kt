@@ -13,7 +13,6 @@ import java.net.URL
 import java.net.URLEncoder
 import java.util.*
 
-
 class Utils {
     companion object {
         private fun transferTo(`in`: InputStream): Long {

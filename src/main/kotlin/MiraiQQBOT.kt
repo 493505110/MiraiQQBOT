@@ -33,7 +33,12 @@ object MiraiQQBOT : KotlinPlugin(
         val day = calendar.get(Calendar.DAY_OF_MONTH) + 1
         calendar.set(year, month, day, 0, 0, 0)
         timer.schedule(
-            Task(),
+            object : TimerTask() {
+                override fun run() {
+                    Data.qdCount = 0
+                    Data.qdED = LongArray(0)
+                }
+            },
             calendar.time,
             60*60*24*1000
         )
@@ -66,12 +71,5 @@ object MiraiQQBOT : KotlinPlugin(
     override fun onDisable() {
         Commands.unregister()
         logger.info { "Plugin unloaded" }
-    }
-}
-
-class Task : TimerTask() {
-    override fun run() {
-        Data.qdCount = 0
-        Data.qdED = LongArray(0)
     }
 }
