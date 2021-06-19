@@ -16,7 +16,7 @@ object MiraiQQBOT : KotlinPlugin(
     JvmPluginDescription(
         id = "ml.zhou2008.MiraiQQBOT",
         name = "QQBOT",
-        version = "0.4.0",
+        version = "0.4.1",
     ) {
         author("zhou2008")
     }
