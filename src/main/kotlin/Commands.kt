@@ -257,7 +257,7 @@ object CommandGetCoin : SimpleCommand(
                 sendMessage("你的目标没有任何的Coin")
             }
         } else {
-            sendMessage("您搁着卡bug呢?")
+            sendMessage("?")
         }
     }
 }
