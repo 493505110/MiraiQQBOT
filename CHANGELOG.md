@@ -7,7 +7,7 @@ to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [0.4.0] - 2021-6-19
 ### Added
-getavatar指令
+getavatar命令
 
 ## [0.3.0] - 2021-6-14
 ### Added
