@@ -76,6 +76,7 @@ object MiraiQQBOT : KotlinPlugin(
                         default {
                             val caa = it.split(" ")
                             when {
+								caa[0] == "help" -> { subject.sendMessage("disable\nenable\naddtoblacklist\nremoveinblacklist\ndisablegetcoin\nenablegetcoin") }
                                 caa[0] == "disable" -> { enabled=false; subject.sendMessage("OK") }
                                 caa[0] == "enable" -> { enabled=true; subject.sendMessage("OK") }
                                 caa[0] == "addtoblacklist" -> {
@@ -85,10 +86,10 @@ object MiraiQQBOT : KotlinPlugin(
                                             Config.BLACKLISTS.add(user)
                                             subject.sendMessage("OK")
                                         } else {
-                                            subject.sendMessage("?")
+                                            subject.sendMessage("Invalid params.")
                                         }
                                     } else {
-                                        subject.sendMessage("?")
+                                        subject.sendMessage("Invalid params.")
                                     }
                                 }
                                 caa[0] == "removeinblacklist" -> {
@@ -98,10 +99,10 @@ object MiraiQQBOT : KotlinPlugin(
                                             Config.BLACKLISTS.remove(user)
                                             subject.sendMessage("OK")
                                         } else {
-                                            subject.sendMessage("?")
+                                            subject.sendMessage("Invalid params.")
                                         }
                                     } else {
-                                        subject.sendMessage("?")
+                                        subject.sendMessage("Invalid params.")
                                     }
                                 }
                                 caa[0] == "disablegetcoin" -> { Config.GETCOINENABLED=false; subject.sendMessage("OK") }
