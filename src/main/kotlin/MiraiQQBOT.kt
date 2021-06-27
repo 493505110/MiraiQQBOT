@@ -284,8 +284,8 @@ object MiraiQQBOT : KotlinPlugin(
                         builder.add("使用\"q\"来退出,输入\"物品名 数量\"来购买.")
                         subject.sendMessage(builder.build())
                         whileSelectMessages {
-                            "q" { false }
-                            "退出" { false }
+                            "q" { subject.sendMessage("已退出"); false }
+                            "退出" { subject.sendMessage("已退出"); false }
                             default {
                                 val nameANDcount = it.split(" ")
                                 val itemName = nameANDcount[0]
