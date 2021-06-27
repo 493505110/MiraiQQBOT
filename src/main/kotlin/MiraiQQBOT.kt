@@ -76,7 +76,7 @@ object MiraiQQBOT : KotlinPlugin(
                         default {
                             val caa = it.split(" ")
                             when {
-								caa[0] == "help" -> { subject.sendMessage("disable\nenable\naddtoblacklist\nremoveinblacklist\ndisablegetcoin\nenablegetcoin") }
+								caa[0] == "achelp" -> { subject.sendMessage("disable\nenable\naddtoblacklist\nremoveinblacklist\ndisablegetcoin\nenablegetcoin") }
                                 caa[0] == "disable" -> { enabled=false; subject.sendMessage("OK") }
                                 caa[0] == "enable" -> { enabled=true; subject.sendMessage("OK") }
                                 caa[0] == "addtoblacklist" -> {
