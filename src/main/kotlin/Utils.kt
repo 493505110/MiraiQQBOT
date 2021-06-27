@@ -4,35 +4,11 @@ import com.alibaba.fastjson.JSONObject
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.data.MusicKind
 import net.mamoe.mirai.message.data.MusicShare
-import java.io.InputStream
 import java.net.URL
 import java.net.URLEncoder
-import java.util.*
 
 class Utils {
     companion object {
-        private fun transferTo(`in`: InputStream): Long {
-            Objects.requireNonNull(System.out, "out")
-            var transferred: Long = 0
-            val buffer = ByteArray(2048)
-            var read: Int
-            while (`in`.read(buffer, 0, 2048).also { read = it } >= 0) {
-                System.out.write(buffer, 0, read)
-                transferred += read.toLong()
-            }
-            return transferred
-        }
-
-        private fun exeCmd(commandStr: String) {
-            try {
-                val p = Runtime.getRuntime().exec(commandStr)
-                transferTo(p.inputStream)
-                p.waitFor()
-            } catch (e: Exception) {
-                throw RuntimeException(e)
-            }
-        }
-
         fun botGetREP(spoken: String): String {
             val url = "https://api.ownthink.com/bot?appid=${Config.APPID}&userid=${Config.USERID}&spoken=${URLEncoder.encode(spoken, Charsets.UTF_8)}"
             val jsonStr = URL(url).readText()

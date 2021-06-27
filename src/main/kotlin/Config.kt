@@ -7,6 +7,8 @@ object Config : AutoSavePluginConfig("setting") {
     var APPID: String by value()
     var USERID: String by value("miraiqqbot")
     var AUTO_ACCEPT: Boolean by value(false)
-    var WHITELISTS: LongArray by value(LongArray(0))
-    var BLACKLISTS: LongArray by value(LongArray(0))
+    var WHITELISTS: MutableList<Long> by value()
+    var BLACKLISTS: MutableList<Long> by value()
+    var GETCOINENABLED: Boolean by value(true)
+    var UNKNOWNARG: String by value("参数错误,请使用\"help\"来获取帮助")
 }

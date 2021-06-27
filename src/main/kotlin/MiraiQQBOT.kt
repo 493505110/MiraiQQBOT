@@ -10,6 +10,8 @@ import net.mamoe.mirai.event.events.BotInvitedJoinGroupRequestEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.NewFriendRequestEvent
 import net.mamoe.mirai.event.selectMessages
+import net.mamoe.mirai.event.whileSelectMessages
+import net.mamoe.mirai.message.code.MiraiCode.deserializeMiraiCode
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import net.mamoe.mirai.utils.info
@@ -44,7 +46,15 @@ object MiraiQQBOT : KotlinPlugin(
             object : TimerTask() {
                 override fun run() {
                     Data.qdCount = 0
-                    Data.qdED = LongArray(0)
+                    Data.qdED.clear()
+                    Data.ItemCount = mutableMapOf(
+                        Pair("每日礼包", 1)
+                    )
+                    for (item in Data.allQD) {
+                        Data.Inventory[item.key]?.set(
+                            "每日礼包", (Data.Inventory[item.key]?.get("每日礼包")
+                                ?: 0) + 1)
+                    }
                 }
             },
             calendar.time,
@@ -55,31 +65,110 @@ object MiraiQQBOT : KotlinPlugin(
             logger.warning { "APPID or USERID no set" }
         }
 
+        var enabled = true
+
+        subscribeAlways<GroupMessageEvent> {
+            if (message.content == "admin console") {
+                if (Config.WHITELISTS.contains(sender.id)) {
+                    subject.sendMessage("Welcome to admin console.")
+                    whileSelectMessages {
+                        "exit" { subject.sendMessage("Exiting..."); false }
+                        default {
+                            val caa = it.split(" ")
+                            when {
+                                caa[0] == "disable" -> { enabled=false; subject.sendMessage("OK") }
+                                caa[0] == "enable" -> { enabled=true; subject.sendMessage("OK") }
+                                caa[0] == "addtoblacklist" -> {
+                                    if (caa.size == 2) {
+                                        val user = caa[1].toLongOrNull()
+                                        if (user != null) {
+                                            Config.BLACKLISTS.add(user)
+                                            subject.sendMessage("OK")
+                                        } else {
+                                            subject.sendMessage("?")
+                                        }
+                                    } else {
+                                        subject.sendMessage("?")
+                                    }
+                                }
+                                caa[0] == "removeinblacklist" -> {
+                                    if (caa.size == 2) {
+                                        val user = caa[1].toLongOrNull()
+                                        if (user != null) {
+                                            Config.BLACKLISTS.remove(user)
+                                            subject.sendMessage("OK")
+                                        } else {
+                                            subject.sendMessage("?")
+                                        }
+                                    } else {
+                                        subject.sendMessage("?")
+                                    }
+                                }
+                                caa[0] == "disablegetcoin" -> { Config.GETCOINENABLED=false; subject.sendMessage("OK") }
+                                caa[0] == "enablegetcoin" -> { Config.GETCOINENABLED=true; subject.sendMessage("OK") }
+                            }
+                            true
+                        }
+                    }
+                } else {
+                    subject.sendMessage("Access denied.")
+                }
+            }
+        }
+
         @Suppress("BlockingMethodInNonBlockingContext")
         subscribeAlways<GroupMessageEvent> {
-            if (!Config.BLACKLISTS.contains(sender.id)) {
+            if (!Config.BLACKLISTS.contains(sender.id) && enabled) {
                 val msg = message.content.split(" ")
                 when {
                     msg[0].startsWith("-") -> {
                         subject.sendMessage(botGetREP(msg[0].removePrefix("-")))
                     }
-                    msg[0] == "help" || msg[0] == "帮助" -> {
+                    msg[0] == "help" -> {
                         subject.sendMessage(buildMessageChain {
-                            +PlainText("指令列表:\n")
-                            +PlainText("  qd 签到\n")
-                            +PlainText("  cointop Coin排行榜\n")
-                            +PlainText("  query <target> 查询某人在这个群的信息\n")
-                            +PlainText("  getavatar <qq> 获取目标头像\n")
-                            +PlainText("  music <name> 点歌\n")
-                            +PlainText("  getcoin <target> 抢劫\n")
-                            +PlainText("  baike <name> 百科")
+                            +"指令列表:\n"
+                            +"  qd 签到\n"
+                            +"  cointop Coin排行榜\n"
+                            +"  query <target> 查询某人在这个群的信息\n"
+                            +"  getavatar <qq> 获取目标头像\n"
+                            +"  music <name> 点歌\n"
+                            +"  getcoin <target> 抢劫\n"
+                            +"  baike <name> 百科\n"
+                            +"  inv 查看物品栏\n"
+                            +"  use <name> 使用物品\n"
+                            +"  desc <name> 查看物品描述\n"
+                            +"  allitem 所有物品\n"
+                            +"  shop 商店\n"
+                            +"  mycoin 金币\n"
+                            +"  admin console 管理员控制台"
                         })
+                    }
+                    msg[0] == "帮助" -> {
+                        subject.sendMessage(buildMessageChain {
+                            +"指令列表:\n"
+                            +"  签到\n"
+                            +"  金币排行\n"
+                            +"  查询 <目标>\n"
+                            +"  获取头像 <qq>\n"
+                            +"  点歌 <歌名>\n"
+                            +"  抢劫 <目标>\n"
+                            +"  百科 <条目名>\n"
+                            +"  物品栏\n"
+                            +"  使用 <物品名>\n"
+                            +"  描述 <物品名>\n"
+                            +"  所有物品\n"
+                            +"  商店\n"
+                            +"  金币"
+                        })
+                    }
+                    msg[0] == "mycoin" || msg[0] == "金币" -> {
+                        subject.sendMessage("Coin: ${Data.coin[sender.id] ?: 0}")
                     }
                     msg[0] == "music" || msg[0] == "点歌" -> {
                         if (msg.size == 2) {
                             Utils.music(msg[1], subject)
                         } else {
-                            subject.sendMessage("参数错误,请使用\"help\"来获取帮助")
+                            subject.sendMessage(Config.UNKNOWNARG)
                         }
                     }
                     msg[0] == "getavatar" || msg[0] == "获取头像" -> {
@@ -89,7 +178,19 @@ object MiraiQQBOT : KotlinPlugin(
                             subject.sendMessage(subject.uploadImage(er))
                             er.close()
                         } else {
-                            subject.sendMessage("参数错误,请使用\"help\"来获取帮助")
+                            subject.sendMessage(Config.UNKNOWNARG)
+                        }
+                    }
+                    msg[0] == "desc" || msg[0] == "描述" -> {
+                        if (msg.size == 2) {
+                            val desc = Data.ItemDesc[msg[1]]
+                            if (desc != null) {
+                                subject.sendMessage(desc)
+                            } else {
+                                subject.sendMessage("这个物品不存在")
+                            }
+                        } else {
+                            subject.sendMessage(Config.UNKNOWNARG)
                         }
                     }
                     msg[0] == "baike" || msg[0] == "百科" -> {
@@ -103,7 +204,123 @@ object MiraiQQBOT : KotlinPlugin(
                                 subject.sendMessage("条目不存在")
                             }
                         } else {
-                            subject.sendMessage("参数错误,请使用\"help\"来获取帮助")
+                            subject.sendMessage(Config.UNKNOWNARG)
+                        }
+                    }
+                    msg[0] == "allitem" || msg[0] == "所有物品" -> {
+                        val builder = MessageChainBuilder()
+                        for (item in Data.ItemDesc) {
+                            builder.add("${item.key}\n")
+                        }
+                        subject.sendMessage(builder.build())
+                    }
+                    msg[0] == "inv" || msg[0] == "inventory" || msg[0] == "物品栏" -> {
+                        val inv = Data.Inventory[sender.id]
+                        if (inv != null) {
+                            val builder = MessageChainBuilder()
+                            for (item in inv) {
+                                builder.add("${item.key}: ${item.value}")
+                            }
+                            if (builder.build().isContentEmpty()) {
+                                builder.add("你没有任何物品")
+                            }
+                            subject.sendMessage(builder.build())
+                        } else {
+                            subject.sendMessage("你没有任何物品")
+                        }
+                    }
+                    msg[0] == "use" || msg[0] == "使用" -> {
+                        if (msg.size >= 2) {
+                            val itemName = msg[1]
+                            val itemCount = Data.Inventory[sender.id]?.get(itemName)
+                            if (itemCount != null) {
+                                var count = 1
+                                if (msg.size == 3) {
+                                    val count2 = msg[2].toIntOrNull()
+                                    if (count2 != null) {
+                                        count = count2
+                                    } else {
+                                        subject.sendMessage("请确保你输入的是整数")
+                                        return@subscribeAlways
+                                    }
+                                }
+                                if (Data.ITEM.contains(itemName)) {
+                                    subject.sendMessage("该物品无法使用")
+                                    return@subscribeAlways
+                                }
+                                if (count > itemCount) {
+                                    subject.sendMessage("你没有这么多的$itemName,你只有" + itemCount + "个")
+                                    return@subscribeAlways
+                                }
+                                for (i in (1..count)) {
+                                    when (itemName) {
+                                        "每日礼包" -> {
+                                            Data.coin[sender.id] = (Data.coin[sender.id] ?: 0) + 10
+                                            subject.sendMessage("Coin +10")
+                                        }
+                                    }
+                                }
+                                Data.Inventory[sender.id]?.set(itemName, itemCount-count)
+                                if (itemCount-count == 0) {
+                                    Data.Inventory[sender.id]?.remove(itemName)
+                                }
+                            } else {
+                                subject.sendMessage("你没有这个物品")
+                            }
+                        } else {
+                            subject.sendMessage(Config.UNKNOWNARG)
+                        }
+                    }
+                    msg[0] == "test" -> {
+                        Data.coin[sender.id] = (Data.coin[sender.id] ?: 0) + 10
+                    }
+                    msg[0] == "shop" || msg[0] == "商店" -> {
+                        val builder = MessageChainBuilder()
+                        builder.add("商店有以下物品出售:\n")
+                        for (item in Data.ItemDesc) {
+                            builder.add("${item.key}(${Data.ItemCount[item.key]}): ${Data.ItemPrice[item.key]} Coin\n")
+                        }
+                        builder.add("使用\"q\"来退出,输入\"物品名 数量\"来购买.")
+                        subject.sendMessage(builder.build())
+                        whileSelectMessages {
+                            "q" { false }
+                            "退出" { false }
+                            default {
+                                val nameANDcount = it.split(" ")
+                                val itemName = nameANDcount[0]
+                                val count = nameANDcount[1].toIntOrNull() ?: 1
+                                if (Data.ItemDesc.containsKey(itemName)) {
+                                    val selfCoin = Data.coin[sender.id] ?: 0
+                                    val itemPrice = Data.ItemPrice[itemName] ?: 0
+                                    val itemCount = Data.ItemCount[itemName] ?: 0
+                                    if (itemPrice < selfCoin) {
+                                        if (itemCount > 0) {
+                                            if (count <= itemCount) {
+                                                if (Data.Inventory[sender.id] != null) {
+                                                    Data.Inventory[sender.id]?.set(
+                                                        itemName, (Data.Inventory[sender.id]?.get(itemName)
+                                                            ?: 0) + 1
+                                                    )
+                                                } else {
+                                                    Data.Inventory[sender.id] = mutableMapOf(Pair(itemName,1))
+                                                }
+                                                Data.ItemCount[itemName] = itemCount - count
+                                                Data.coin[sender.id] = selfCoin - itemPrice
+                                                subject.sendMessage("成功,现在你有${Data.Inventory[sender.id]?.get(itemName)}个$itemName")
+                                            } else {
+                                                subject.sendMessage("商店里没有这么多的$itemName,只有" + itemCount + "个")
+                                            }
+                                        } else {
+                                            subject.sendMessage("这个物品已经卖光了")
+                                        }
+                                    } else {
+                                        subject.sendMessage("你没有足够的Coin,你只有$selfCoin Coin")
+                                    }
+                                } else {
+                                    subject.sendMessage("没有这个物品")
+                                }
+                                true
+                            }
                         }
                     }
                     msg[0].startsWith("query", true) || msg[0].startsWith("查询") -> {
@@ -128,15 +345,15 @@ object MiraiQQBOT : KotlinPlugin(
                                     coin = 0
                                 }
                                 subject.sendMessage(buildMessageChain {
-                                    +PlainText("QQ: $qq($nick)\n")
-                                    +PlainText("群名片: $nameCard\n")
-                                    +PlainText("Coin: $coin\n")
-                                    +PlainText("最后一次发言时间: $lastSpeakTime\n")
-                                    +PlainText("入群时间: $joinTime")
+                                    +"QQ: $qq($nick)\n"
+                                    +"群名片: $nameCard\n"
+                                    +"Coin: $coin\n"
+                                    +"最后一次发言时间: $lastSpeakTime\n"
+                                    +"入群时间: $joinTime"
                                 })
                             }
                         } else {
-                            subject.sendMessage("参数错误,请使用\"help\"来获取帮助")
+                            subject.sendMessage(Config.UNKNOWNARG)
                         }
                     }
                     msg[0] == "cointop" || msg[0] == "金币排行" -> {
@@ -145,47 +362,37 @@ object MiraiQQBOT : KotlinPlugin(
 
                         val builder = MessageChainBuilder()
                         val iterator = sortedmap.iterator()
-                        builder.add(PlainText("Coin 排行榜\n"))
+                        builder.add("Coin 排行榜\n")
                         var allCoin = 0
                         var index = 1
                         while (iterator.hasNext()) {
                             val key = iterator.next().key
                             val value = Data.coin[key]
-                            builder.add(PlainText("$index.") + At(key) + PlainText("($key): $value\n"))
+                            builder.add("$index.[mirai:at:$key]($key): $value\n".deserializeMiraiCode())
                             index++
                             if (value != null) {
                                 allCoin += value
                             }
                         }
-                        builder.add(PlainText("Coin 总和: $allCoin"))
+                        builder.add("Coin 总和: $allCoin")
                         subject.sendMessage(builder.build())
                     }
                     msg[0].startsWith("getcoin", true) || msg[0].startsWith("抢劫") -> {
-                        val at: At? = message.findIsInstance<At>()
-                        if (at != null) {
-                            var target: NormalMember? = null
-                            for (member in group.members) {
-                                if (member.id == at.target) {
-                                    target = member
-                                    break
-                                }
-                            }
-                            if (target != null) {
-                                if (target != sender) {
-                                    subject.sendMessage("确认吗?")
-                                    val confirm: Boolean = selectMessages {
-                                        startsWith("y") { true }
-                                        startsWith("n") { false }
-                                        startsWith("是") { true }
-                                        startsWith("否") { false }
-                                        startsWith("确认") { true }
-                                        startsWith("取消") { false }
-                                        timeout(10_000) { false }
+                        if (Config.GETCOINENABLED) {
+                            val at: At? = message.findIsInstance<At>()
+                            if (at != null) {
+                                var target: NormalMember? = null
+                                for (member in group.members) {
+                                    if (member.id == at.target) {
+                                        target = member
+                                        break
                                     }
-                                    if (confirm) {
+                                }
+                                if (target != null) {
+                                    if (target != sender) {
                                         var tof = (1..10).random() <= 4
-                                        if (Config.WHITELISTS.contains(target.id)) {
-                                            tof = false
+                                        if (Config.WHITELISTS.contains(sender.id)) {
+                                            tof = true
                                         }
                                         val targetCoin = Data.coin[target.id]
                                         val selfCoin = Data.coin[sender.id]
@@ -198,28 +405,42 @@ object MiraiQQBOT : KotlinPlugin(
                                         }
                                         if (targetCoin != null) {
                                             val getCoin = (targetCoin * 0.3).roundToInt()
-                                            if (tof) {
-                                                Data.coin[sender.id] = selfCoin + getCoin
-                                                Data.coin[target.id] = targetCoin - getCoin
-                                                subject.sendMessage(
-                                                    At(sender) + "成功,你获得了$getCoin(${Data.coin[sender.id]}) Coin,目标还剩${Data.coin[target.id]} Coin"
-                                                )
+                                            subject.sendMessage("确认吗?")
+                                            val confirm: Boolean = selectMessages {
+                                                startsWith("y") { true }
+                                                startsWith("n") { false }
+                                                startsWith("是") { true }
+                                                startsWith("否") { false }
+                                                startsWith("确认") { true }
+                                                startsWith("取消") { false }
+                                                timeout(10_000) { false }
+                                            }
+                                            if (confirm) {
+                                                if (tof) {
+                                                    Data.coin[sender.id] = selfCoin + getCoin
+                                                    Data.coin[target.id] = targetCoin - getCoin
+                                                    subject.sendMessage(
+                                                        At(sender) + "成功,你获得了$getCoin(${Data.coin[sender.id]}) Coin,目标还剩${Data.coin[target.id]} Coin"
+                                                    )
+                                                } else {
+                                                    Data.coin[sender.id] = selfCoin - lostCoin
+                                                    subject.sendMessage(At(sender) + "失败,你丢失了$lostCoin Coin,你还剩${Data.coin[sender.id]} Coin")
+                                                }
                                             } else {
-                                                Data.coin[sender.id] = selfCoin - lostCoin
-                                                subject.sendMessage(At(sender) + "失败,你丢失了$lostCoin Coin,你还剩${Data.coin[sender.id]} Coin")
+                                                subject.sendMessage("已取消")
                                             }
                                         } else {
                                             subject.sendMessage("你的目标没有任何的Coin")
                                         }
                                     } else {
-                                        subject.sendMessage("已取消")
+                                        subject.sendMessage("?")
                                     }
-                                } else {
-                                    subject.sendMessage("?")
                                 }
+                            } else {
+                                subject.sendMessage(Config.UNKNOWNARG)
                             }
                         } else {
-                            subject.sendMessage("参数错误,请使用\"help\"来获取帮助")
+                            subject.sendMessage("暂时停用")
                         }
                     }
                     msg[0] == "qd" || msg[0] == "签到" -> {
@@ -247,17 +468,7 @@ object MiraiQQBOT : KotlinPlugin(
                                 gotCoin = coin
                             }
 
-                            if (Data.qdED.isEmpty()) {
-                                Data.qdED = LongArray(1)
-                                Data.qdED[0] = sender.id
-                            } else {
-                                val newARRAY = LongArray(Data.qdED.size + 1)
-                                for (i in Data.qdED.indices) {
-                                    newARRAY[i] = Data.qdED[i]
-                                }
-                                newARRAY[Data.qdED.size] = sender.id
-                                Data.qdED = newARRAY
-                            }
+                            Data.qdED.add(sender.id)
 
                             val userAllQD = Data.allQD[sender.id]
                             if (userAllQD != null) {
@@ -268,12 +479,12 @@ object MiraiQQBOT : KotlinPlugin(
 
                             subject.sendMessage(buildMessageChain {
                                 +At(sender)
-                                +PlainText("\n")
-                                +PlainText("签到成功\n")
-                                +PlainText("你是今天第${Data.qdCount}位签到的\n")
-                                +PlainText("你已累计签到${Data.allQD[sender.id]}天\n")
-                                +PlainText("你获得了 $gotCoin Coin\n")
-                                +PlainText("你现在有 ${Data.coin[sender.id]} Coin")
+                                +"\n"
+                                +"签到成功\n"
+                                +"你是今天第${Data.qdCount}位签到的\n"
+                                +"你已累计签到${Data.allQD[sender.id]}天\n"
+                                +"你获得了 $gotCoin Coin\n"
+                                +"你现在有 ${Data.coin[sender.id]} Coin"
                             })
                         }
                     }
