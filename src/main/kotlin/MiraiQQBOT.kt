@@ -106,6 +106,7 @@ object MiraiQQBOT : KotlinPlugin(
                                 }
                                 caa[0] == "disablegetcoin" -> { Config.GETCOINENABLED=false; subject.sendMessage("OK") }
                                 caa[0] == "enablegetcoin" -> { Config.GETCOINENABLED=true; subject.sendMessage("OK") }
+								else -> { subject.sendMessage("Unknown command.") }
                             }
                             true
                         }
