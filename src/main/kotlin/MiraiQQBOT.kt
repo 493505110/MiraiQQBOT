@@ -67,7 +67,7 @@ object MiraiQQBOT : KotlinPlugin(
                 if (Config.WHITELISTS.contains(sender.id)) {
                     subject.sendMessage("Welcome to admin console.")
                     whileSelectMessages {
-                        "exit" { subject.sendMessage("Exiting..."); false }
+                        "exit" { subject.sendMessage("已退出"); false }
                         default {
                             val caa = it.split(" ")
                             when {
@@ -77,6 +77,7 @@ object MiraiQQBOT : KotlinPlugin(
                                     disable/enable [getcoin]
                                     add/remove black/white list <qq>
                                     set n/gcw/gcl <num>
+                                    exit
                                 """.trimIndent()
                                     )
                                 }
