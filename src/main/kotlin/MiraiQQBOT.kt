@@ -76,7 +76,11 @@ object MiraiQQBOT : KotlinPlugin(
                         default {
                             val caa = it.split(" ")
                             when {
-								caa[0] == "achelp" -> { subject.sendMessage("disable\nenable\naddtoblacklist\nremoveinblacklist\ndisablegetcoin\nenablegetcoin") }
+                                caa[0] == "achelp" -> { subject.sendMessage("""
+                                    disable/enable\n
+                                    disable/enable getcoin\n
+                                    addto/removein black/white list\n
+                                """.trimIndent()) }
                                 caa[0] == "disable" -> { enabled=false; subject.sendMessage("OK") }
                                 caa[0] == "enable" -> { enabled=true; subject.sendMessage("OK") }
                                 caa[0] == "addtoblacklist" -> {
@@ -97,6 +101,32 @@ object MiraiQQBOT : KotlinPlugin(
                                         val user = caa[1].toLongOrNull()
                                         if (user != null) {
                                             Config.BLACKLISTS.remove(user)
+                                            subject.sendMessage("OK")
+                                        } else {
+                                            subject.sendMessage("Invalid params.")
+                                        }
+                                    } else {
+                                        subject.sendMessage("Invalid params.")
+                                    }
+                                }
+                                caa[0] == "addtowhitelist" -> {
+                                    if (caa.size == 2) {
+                                        val user = caa[1].toLongOrNull()
+                                        if (user != null) {
+                                            Config.WHITELISTS.add(user)
+                                            subject.sendMessage("OK")
+                                        } else {
+                                            subject.sendMessage("Invalid params.")
+                                        }
+                                    } else {
+                                        subject.sendMessage("Invalid params.")
+                                    }
+                                }
+                                caa[0] == "removeinwhitelist" -> {
+                                    if (caa.size == 2) {
+                                        val user = caa[1].toLongOrNull()
+                                        if (user != null) {
+                                            Config.WHITELISTS.remove(user)
                                             subject.sendMessage("OK")
                                         } else {
                                             subject.sendMessage("Invalid params.")
