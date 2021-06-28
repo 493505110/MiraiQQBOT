@@ -11,4 +11,5 @@ object Config : AutoSavePluginConfig("setting") {
     var BLACKLISTS: MutableList<Long> by value()
     var GETCOINENABLED: Boolean by value(true)
     var UNKNOWNARG: String by value("参数错误,请使用\"help\"来获取帮助")
+    var N: Int by value(3)
 }

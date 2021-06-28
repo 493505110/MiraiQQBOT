@@ -50,11 +50,6 @@ object MiraiQQBOT : KotlinPlugin(
                     Data.ItemCount = mutableMapOf(
                         Pair("每日礼包", 1)
                     )
-                    for (item in Data.allQD) {
-                        Data.Inventory[item.key]?.set(
-                            "每日礼包", (Data.Inventory[item.key]?.get("每日礼包")
-                                ?: 0) + 1)
-                    }
                 }
             },
             calendar.time,
@@ -80,6 +75,7 @@ object MiraiQQBOT : KotlinPlugin(
                                     disable/enable\n
                                     disable/enable getcoin\n
                                     addto/removein black/white list\n
+                                    setn
                                 """.trimIndent()) }
                                 caa[0] == "disable" -> { enabled=false; subject.sendMessage("OK") }
                                 caa[0] == "enable" -> { enabled=true; subject.sendMessage("OK") }
@@ -127,6 +123,19 @@ object MiraiQQBOT : KotlinPlugin(
                                         val user = caa[1].toLongOrNull()
                                         if (user != null) {
                                             Config.WHITELISTS.remove(user)
+                                            subject.sendMessage("OK")
+                                        } else {
+                                            subject.sendMessage("Invalid params.")
+                                        }
+                                    } else {
+                                        subject.sendMessage("Invalid params.")
+                                    }
+                                }
+                                caa[0] == "setn" -> {
+                                    if (caa.size == 2) {
+                                        val user = caa[1].toIntOrNull()
+                                        if (user != null) {
+                                            Config.N = user
                                             subject.sendMessage("OK")
                                         } else {
                                             subject.sendMessage("Invalid params.")
@@ -249,14 +258,15 @@ object MiraiQQBOT : KotlinPlugin(
                     msg[0] == "inv" || msg[0] == "inventory" || msg[0] == "物品栏" -> {
                         val inv = Data.Inventory[sender.id]
                         if (inv != null) {
-                            val builder = MessageChainBuilder()
+                            val builder = StringBuilder()
                             for (item in inv) {
-                                builder.add("${item.key}: ${item.value}")
+                                builder.append("${item.key}: ${item.value}\n")
                             }
-                            if (builder.build().isContentEmpty()) {
-                                builder.add("你没有任何物品")
+                            builder.delete(builder.length - 2, builder.length)
+                            if (builder.isEmpty()) {
+                                builder.append("你没有任何物品")
                             }
-                            subject.sendMessage(builder.build())
+                            subject.sendMessage(builder.toString())
                         } else {
                             subject.sendMessage("你没有任何物品")
                         }
