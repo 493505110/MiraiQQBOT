@@ -71,113 +71,102 @@ object MiraiQQBOT : KotlinPlugin(
                         default {
                             val caa = it.split(" ")
                             when {
-                                caa[0] == "achelp" -> { subject.sendMessage("""
+                                caa[0] == "achelp" -> {
+                                    subject.sendMessage(
+                                        """
                                     disable/enable [getcoin]
-                                    addto/removein black/white list
-                                    set n/gcw/gcl
-                                """.trimIndent()) }
-                                caa[0] == "disable" -> { enabled=false; subject.sendMessage("OK") }
-                                caa[0] == "enable" -> { enabled=true; subject.sendMessage("OK") }
-                                caa[0] == "addtoblacklist" -> {
+                                    add/remove black/white list <qq>
+                                    set n/gcw/gcl <num>
+                                """.trimIndent()
+                                    )
+                                }
+                                caa[0] == "disable" -> {
                                     if (caa.size == 2) {
-                                        val user = caa[1].toLongOrNull()
-                                        if (user != null) {
-                                            Config.BLACKLISTS.add(user)
-                                            subject.sendMessage("OK")
+                                        if (caa[1] == "getcoin") {
+                                            Config.GETCOINENABLED = false
+                                            subject.sendMessage("OK,现在GETCOINENABLED为${Config.GETCOINENABLED}")
                                         } else {
-                                            subject.sendMessage("Invalid params.")
+                                            subject.sendMessage(Config.UNKNOWNARG.replace("help", "achelp"))
                                         }
                                     } else {
-                                        subject.sendMessage("Invalid params.")
+                                        enabled = false
+                                        subject.sendMessage("OK,现在enabled为$enabled")
                                     }
                                 }
-                                caa[0] == "removeinblacklist" -> {
+                                caa[0] == "enable" -> {
                                     if (caa.size == 2) {
-                                        val user = caa[1].toLongOrNull()
-                                        if (user != null) {
-                                            Config.BLACKLISTS.remove(user)
-                                            subject.sendMessage("OK")
+                                        if (caa[1] == "getcoin") {
+                                            Config.GETCOINENABLED = true
+                                            subject.sendMessage("OK,现在GETCOINENABLED为${Config.GETCOINENABLED}")
                                         } else {
-                                            subject.sendMessage("Invalid params.")
+                                            subject.sendMessage(Config.UNKNOWNARG.replace("help", "achelp"))
                                         }
                                     } else {
-                                        subject.sendMessage("Invalid params.")
+                                        enabled = true
+                                        subject.sendMessage("OK,现在enabled为$enabled")
                                     }
                                 }
-                                caa[0] == "addtowhitelist" -> {
-                                    if (caa.size == 2) {
-                                        val user = caa[1].toLongOrNull()
-                                        if (user != null) {
-                                            Config.WHITELISTS.add(user)
-                                            subject.sendMessage("OK")
-                                        } else {
-                                            subject.sendMessage("Invalid params.")
+                                caa[0] == "add" -> {
+                                    if (caa.size == 3) {
+                                        val user = caa[2].toLongOrNull()
+                                        when (caa[1]) {
+                                            "whitelist" -> {
+                                                if (user != null) {
+                                                    Config.WHITELISTS.add(user)
+                                                    subject.sendMessage("OK,已将$user" + "添加到WHITELIST中")
+                                                } else {
+                                                    subject.sendMessage(Config.UNKNOWNARG.replace("help", "achelp"))
+                                                }
+                                            }
+                                            "blacklist" -> {
+                                                if (user != null) {
+                                                    Config.BLACKLISTS.add(user)
+                                                    subject.sendMessage("OK,已将$user" + "添加到BLACKLIST中")
+                                                } else {
+                                                    subject.sendMessage(Config.UNKNOWNARG.replace("help", "achelp"))
+                                                }
+                                            }
                                         }
                                     } else {
-                                        subject.sendMessage("Invalid params.")
+                                        subject.sendMessage(Config.UNKNOWNARG.replace("help", "achelp"))
                                     }
                                 }
-                                caa[0] == "removeinwhitelist" -> {
-                                    if (caa.size == 2) {
-                                        val user = caa[1].toLongOrNull()
-                                        if (user != null) {
-                                            Config.WHITELISTS.remove(user)
-                                            subject.sendMessage("OK")
-                                        } else {
-                                            subject.sendMessage("Invalid params.")
+                                caa[0] == "remove" -> {
+                                    if (caa.size == 3) {
+                                        val user = caa[2].toLongOrNull()
+                                        when (caa[1]) {
+                                            "whitelist" -> {
+                                                if (user != null) {
+                                                    Config.WHITELISTS.remove(user)
+                                                    subject.sendMessage("OK,已将$user" + "从WHITELIST中移除")
+                                                } else {
+                                                    subject.sendMessage(Config.UNKNOWNARG.replace("help", "achelp"))
+                                                }
+                                            }
+                                            "blacklist" -> {
+                                                if (user != null) {
+                                                    Config.BLACKLISTS.remove(user)
+                                                    subject.sendMessage("OK,已将$user" + "从BLACKLIST中移除")
+                                                } else {
+                                                    subject.sendMessage(Config.UNKNOWNARG.replace("help", "achelp"))
+                                                }
+                                            }
                                         }
                                     } else {
-                                        subject.sendMessage("Invalid params.")
+                                        subject.sendMessage(Config.UNKNOWNARG.replace("help", "achelp"))
                                     }
                                 }
-                                caa[0] == "setn" -> {
-                                    if (caa.size == 2) {
-                                        val user = caa[1].toIntOrNull()
-                                        if (user != null) {
-                                            Config.N = user
-                                            subject.sendMessage("OK")
-                                        } else {
-                                            subject.sendMessage("Invalid params.")
-                                        }
-                                    } else {
-                                        subject.sendMessage("Invalid params.")
-                                    }
+                                else -> {
+                                    subject.sendMessage(
+                                        Config.UNKNOWNARG.replace("help", "achelp").replace("参数错误", "未知命令")
+                                    )
                                 }
-                                caa[0] == "setgcw" -> {
-                                    if (caa.size == 2) {
-                                        val user = caa[1].toFloatOrNull()
-                                        if (user != null) {
-                                            Config.GCW = user
-                                            subject.sendMessage("OK")
-                                        } else {
-                                            subject.sendMessage("Invalid params.")
-                                        }
-                                    } else {
-                                        subject.sendMessage("Invalid params.")
-                                    }
-                                }
-                                caa[0] == "setgcl" -> {
-                                    if (caa.size == 2) {
-                                        val user = caa[1].toFloatOrNull()
-                                        if (user != null) {
-                                            Config.GCL = user
-                                            subject.sendMessage("OK")
-                                        } else {
-                                            subject.sendMessage("Invalid params.")
-                                        }
-                                    } else {
-                                        subject.sendMessage("Invalid params.")
-                                    }
-                                }
-                                caa[0] == "disablegetcoin" -> { Config.GETCOINENABLED=false; subject.sendMessage("OK") }
-                                caa[0] == "enablegetcoin" -> { Config.GETCOINENABLED=true; subject.sendMessage("OK") }
-								else -> { subject.sendMessage("Unknown command.") }
                             }
                             true
                         }
                     }
                 } else {
-                    subject.sendMessage("Access denied.")
+                    subject.sendMessage("拒绝访问: 权限不足")
                 }
             }
         }
