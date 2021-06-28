@@ -72,10 +72,9 @@ object MiraiQQBOT : KotlinPlugin(
                             val caa = it.split(" ")
                             when {
                                 caa[0] == "achelp" -> { subject.sendMessage("""
-                                    disable/enable
-                                    disable/enable getcoin
+                                    disable/enable [getcoin]
                                     addto/removein black/white list
-                                    setn
+                                    set n/gcw/gcl
                                 """.trimIndent()) }
                                 caa[0] == "disable" -> { enabled=false; subject.sendMessage("OK") }
                                 caa[0] == "enable" -> { enabled=true; subject.sendMessage("OK") }
@@ -136,6 +135,32 @@ object MiraiQQBOT : KotlinPlugin(
                                         val user = caa[1].toIntOrNull()
                                         if (user != null) {
                                             Config.N = user
+                                            subject.sendMessage("OK")
+                                        } else {
+                                            subject.sendMessage("Invalid params.")
+                                        }
+                                    } else {
+                                        subject.sendMessage("Invalid params.")
+                                    }
+                                }
+                                caa[0] == "setgcw" -> {
+                                    if (caa.size == 2) {
+                                        val user = caa[1].toFloatOrNull()
+                                        if (user != null) {
+                                            Config.GCW = user
+                                            subject.sendMessage("OK")
+                                        } else {
+                                            subject.sendMessage("Invalid params.")
+                                        }
+                                    } else {
+                                        subject.sendMessage("Invalid params.")
+                                    }
+                                }
+                                caa[0] == "setgcl" -> {
+                                    if (caa.size == 2) {
+                                        val user = caa[1].toFloatOrNull()
+                                        if (user != null) {
+                                            Config.GCL = user
                                             subject.sendMessage("OK")
                                         } else {
                                             subject.sendMessage("Invalid params.")
@@ -432,7 +457,7 @@ object MiraiQQBOT : KotlinPlugin(
                                 }
                                 if (target != null) {
                                     if (target != sender) {
-                                        var tof = (1..10).random() <= 4
+                                        var tof = (1..100).random() <= Config.N
                                         if (Config.WHITELISTS.contains(sender.id)) {
                                             tof = true
                                         }
@@ -440,13 +465,13 @@ object MiraiQQBOT : KotlinPlugin(
                                         val selfCoin = Data.coin[sender.id]
                                         val lostCoin: Int
                                         if (selfCoin != null) {
-                                            lostCoin = (selfCoin * 0.1).roundToInt()
+                                            lostCoin = (selfCoin * Config.GCL).roundToInt()
                                         } else {
                                             subject.sendMessage("你至少需要1 Coin来进行这个操作")
                                             return@subscribeAlways
                                         }
                                         if (targetCoin != null) {
-                                            val getCoin = (targetCoin * 0.3).roundToInt()
+                                            val getCoin = (targetCoin * Config.GCW).roundToInt()
                                             subject.sendMessage("确认吗?")
                                             val confirm: Boolean = selectMessages {
                                                 startsWith("y") { true }
