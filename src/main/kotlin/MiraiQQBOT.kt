@@ -72,9 +72,9 @@ object MiraiQQBOT : KotlinPlugin(
                             val caa = it.split(" ")
                             when {
                                 caa[0] == "achelp" -> { subject.sendMessage("""
-                                    disable/enable\n
-                                    disable/enable getcoin\n
-                                    addto/removein black/white list\n
+                                    disable/enable
+                                    disable/enable getcoin
+                                    addto/removein black/white list
                                     setn
                                 """.trimIndent()) }
                                 caa[0] == "disable" -> { enabled=false; subject.sendMessage("OK") }
