@@ -157,9 +157,37 @@ object MiraiQQBOT : KotlinPlugin(
                                         subject.sendMessage(Config.UNKNOWNARG.replace("help", "achelp"))
                                     }
                                 }
+                                caa[0] == "set" -> {
+                                    if (caa.size == 3) {
+                                        val value = caa[2].toFloatOrNull()
+                                        if (value != null) {
+                                            when (caa[1]) {
+                                                "n" -> {
+                                                    Config.N = value.toInt()
+                                                    subject.sendMessage("OK,现在N为$value")
+                                                }
+                                                "gcl" -> {
+                                                    Config.GCL = value
+                                                    subject.sendMessage("OK,现在GCL为$value")
+                                                }
+                                                "gcw" -> {
+                                                    Config.GCW = value
+                                                    subject.sendMessage("OK,现在GCW为$value")
+                                                }
+                                                else -> {
+                                                    subject.sendMessage(Config.UNKNOWNARG.replace("help", "achelp"))
+                                                }
+                                            }
+                                        } else {
+                                            subject.sendMessage(Config.UNKNOWNARG.replace("help", "achelp"))
+                                        }
+                                    } else {
+                                        subject.sendMessage(Config.UNKNOWNARG.replace("help", "achelp"))
+                                    }
+                                }
                                 else -> {
                                     subject.sendMessage(
-                                        Config.UNKNOWNARG.replace("help", "achelp").replace("参数错误", "未知命令")
+                                        Config.UNKNOWNARG.replace("help", "achelp")
                                     )
                                 }
                             }
